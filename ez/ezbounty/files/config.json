@@ -1,0 +1,7 @@
+{
+"BASE_URL": "https://127.0.0.1:5000",
+"ADMIN_USER": "admin",
+"ADMIN_PASS": "sus",
+"SECRET_KEY": "ccccccccccccccccccccccccccccccccccccc",
+"FLAG": "KSUS{fake_flag}"
+}

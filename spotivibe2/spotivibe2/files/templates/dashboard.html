@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+<script src="https://www.w3schools.com/lib/w3.js"></script>
+
+<style nonce="{{ csp_nonce }}">
+  @keyframes fadeDown {
+    from {
+      opacity: 0;
+      transform: translateY(-18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fadeRight {
+    from {
+      opacity: 0;
+      transform: translateX(18px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  .dashboard-link {
+    display: inline-block;
+    margin-bottom: 30px;
+  }
+
+  .search-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+
+  .song-card {
+    background: #222;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    opacity: 0;
+  }
+
+  .animate-title {
+    animation: fadeDown 0.6s ease;
+  }
+
+  .animate-search {
+    animation: fadeDown 0.8s ease;
+  }
+
+  .animate-result {
+    animation: fadeLeft 0.6s ease;
+  }
+
+  .animate-card {
+    animation: fadeRight 0.5s ease forwards;
+  }
+  
+  .song-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+</style>
+
+<h2 id="dashboard-title">Your Dashboard</h2>
+
+<div>
+  <a class="dashboard-link" href="{{ url_for('add_song') }}">Add New Song</a>
+</div>
+
+<form method="GET" class="search-form" id="search-form">
+  <input
+      type="text"
+      name="search"
+      placeholder="Search songs..."
+      value="{{ search }}"
+  >
+  <button type="submit">Search</button>
+</form>
+
+{% if search %}
+<p id="search-result-text">Results for: <strong>{{ search | safe}}</strong></p>
+{% endif %}
+
+<ul class="song-list">
+  {% for song in songs %}
+  <li class="song-card">
+    <a href="{{ url_for('song', song_id=song.id) }}">
+      {{ song.title }}
+    </a>
+  </li>
+  {% endfor %}
+</ul>
+
+<script nonce="{{ csp_nonce }}">
+  document.addEventListener("DOMContentLoaded", function () {
+    
+    w3.addClass("#dashboard-title", "animate-title");
+    w3.addClass("#search-form", "animate-search");
+
+    const resultText = document.getElementById("search-result-text");
+    if (resultText) {
+      w3.addClass("#search-result-text", "animate-result");
+    }
+
+    const cards = document.querySelectorAll(".song-card");
+    cards.forEach((card, index) => {
+      setTimeout(() => {
+        w3.addClass(card, "animate-card");
+      }, index * 120);
+    });
+  });
+</script>
+
+{% endblock %}

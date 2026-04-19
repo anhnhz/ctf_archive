@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Register</title>
+
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #0f172a, #020617);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial;
+    color: white;
+}
+
+.card {
+    background: #0b1220;
+    padding: 35px;
+    border-radius: 20px;
+    width: 320px;
+    box-shadow: 0 0 40px rgba(56,189,248,0.2);
+    text-align: center;
+}
+
+h2 {
+    color: #38bdf8;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 12px;
+    border-radius: 10px;
+    border: none;
+    background: #020617;
+    color: white;
+}
+
+button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #38bdf8;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+a {
+    display: block;
+    margin-top: 15px;
+    color: #38bdf8;
+    text-decoration: none;
+}
+</style>
+</head>
+
+<body>
+<div class="card">
+    <h2>Register</h2>
+
+    <form method="POST">
+        <input name="username" placeholder="Username" required>
+        <input name="password" type="password" placeholder="Password" required>
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <a href="/login">Back to login</a>
+</div>
+</body>
+</html>

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<h2>Report Song to Admin</h2>
+
+<p style="text-align:center; margin-bottom:30px;">
+Our admin loves discovering new music and will review reported songs shortly.
+If you think a track deserves attention submit its Song ID below.
+</p>
+
+<form method="POST">
+
+<input type="number" name="song_id" placeholder="Song ID">
+
+<button type="submit">Report</button>
+
+</form>
+
+{% endblock %}

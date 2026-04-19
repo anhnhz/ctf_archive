@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Report</title>
+
+<style>
+body {
+    margin: 0;
+    height: 100vh;
+    background: linear-gradient(135deg, #0f172a, #020617);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    color: white;
+    position: relative;
+}
+
+/* Navbar */
+.navbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 18px 30px;
+    background: rgba(15, 23, 42, 0.75);
+    backdrop-filter: blur(8px);
+}
+
+.navbar a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px;
+    transition: 0.2s;
+}
+
+.navbar a:hover {
+    color: #38bdf8;
+}
+
+.logo {
+    font-size: 22px;
+    font-weight: bold;
+    color: #38bdf8 !important;
+}
+
+.card {
+    background: #0b1220;
+    padding: 35px;
+    border-radius: 20px;
+    width: 340px;
+    box-shadow: 0 0 40px rgba(56,189,248,0.2);
+    text-align: center;
+}
+
+h2 {
+    color: #38bdf8;
+    margin-top: 0;
+}
+
+input {
+    width: 100%;
+    padding: 12px;
+    margin-top: 15px;
+    border-radius: 10px;
+    border: none;
+    background: #020617;
+    color: white;
+    box-sizing: border-box;
+}
+
+button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: #38bdf8;
+    color: black;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.card a {
+    display: block;
+    margin-top: 15px;
+    color: #38bdf8;
+    text-decoration: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="navbar">
+    <a href="/dashboard" class="logo">MyDashboard</a>
+    <a href="/logout">Logout</a>
+</div>
+
+<div class="card">
+    <h2>Report URL</h2>
+
+    <form method="POST">
+        <input name="url" placeholder="https://google.com/..." required>
+        <button type="submit">Send to Admin</button>
+    </form>
+
+    <a href="/dashboard">Back</a>
+</div>
+
+</body>
+</html>
