@@ -1,0 +1,87 @@
+services:
+  edge-proxy:
+    build: ./edge-proxy
+    ports:
+      - "${WEB_PORT:-8080}:8080"
+    depends_on:
+      - api-server
+      - build-runner
+      - policy-engine
+    restart: unless-stopped
+    networks:
+      - harbor-public
+      - harbor-secure
+
+  api-server:
+    build: ./api-server
+    expose:
+      - "3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    depends_on:
+      - redis
+      - postgres
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://darkharbor:user_stack_fake_pw@postgres:5432/darkharbor}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      JWKS_ISSUER: ${JWKS_ISSUER:-https://auth.darkharbor.internal}
+      HMAC_SECRET: ${HMAC_SECRET:-user_stack_fake_hmac_0000000000}
+      INTERNAL_CONFIG_PORT: "6000"
+    restart: unless-stopped
+    networks:
+      - harbor-public
+      - harbor-secure
+
+  build-runner:
+    build: ./build-runner
+    expose:
+      - "9000"
+    environment:
+      METADATA_URL: http://api-server:6000
+      HMAC_SECRET: ${HMAC_SECRET:-user_stack_fake_hmac_0000000000}
+    restart: unless-stopped
+    networks:
+      - harbor-public
+
+  policy-engine:
+    build: ./policy-engine
+    expose:
+      - "5000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://darkharbor:user_stack_fake_pw@postgres:5432/darkharbor}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      FLAG: "hacktheon2026{fake_flag}"
+      HMAC_SECRET: ${HMAC_SECRET:-user_stack_fake_hmac_0000000000}
+      SIGNING_KEY_SEED: ${SIGNING_KEY_SEED:-user_stack_fake_seed}
+    restart: unless-stopped
+    networks:
+      - harbor-secure
+
+  redis:
+    image: redis:7.4-alpine
+    expose:
+      - "6379"
+    restart: unless-stopped
+    networks:
+      - harbor-public
+      - harbor-secure
+
+  postgres:
+    image: postgres:16-alpine
+    expose:
+      - "5432"
+    environment:
+      POSTGRES_DB: darkharbor
+      POSTGRES_USER: darkharbor
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-user_stack_fake_pw}
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    restart: unless-stopped
+    networks:
+      - harbor-public
+      - harbor-secure
+
+networks:
+  harbor-public:
+  harbor-secure:
+    internal: true
