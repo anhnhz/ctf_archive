@@ -1,0 +1,80 @@
+{% extends "layout.html" %}
+{% block title %}/report{% endblock %}
+{% block content %}
+<section x-data="noteEditor('{{ url_for('submit_report') }}')" x-init="init()" class="space-y-6">
+  <header class="flex items-center gap-3">
+    <h1 class="text-xl font-semibold tracking-tight">Report</h1>
+    <span class="text-xs text-slate-500">Describe your problem in detail</span>
+  </header>
+
+  <div class="grid lg:grid-cols-2 gap-6">
+    <div class="flex flex-col gap-3">
+      <div class="flex items-center gap-2 text-xs">
+        <button type="button" class="px-2.5 py-1.5 rounded border border-slate-300 dark:border-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-800/60" @click="wrap('<h2>','</h2>')">H2</button>
+        <button type="button" class="px-2.5 py-1.5 rounded border border-slate-300 dark:border-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-800/60" @click="wrap('<strong>','</strong>')">Bold</button>
+        <button type="button" class="px-2.5 py-1.5 rounded border border-slate-300 dark:border-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-800/60" @click="wrap('<em>','</em>')">Italic</button>
+        <button type="button" class="px-2.5 py-1.5 rounded border border-slate-300 dark:border-slate-700 hover:bg-slate-200/50 dark:hover:bg-slate-800/60" @click="insert('<p></p>')">+ P</button>
+        <span class="ml-auto text-slate-400" x-text="count + ' ký tự'"></span>
+      </div>
+      <div class="terminal">
+        <div class="terminal-head">
+          <span class="dot bg-red-400"></span><span class="dot bg-yellow-400"></span><span class="dot bg-green-400"></span>
+          <span class="ml-3 text-xs text-slate-300">report.html</span>
+        </div>
+        <textarea x-ref="ta" x-model="raw" @input="update()" rows="14" class="w-full bg-slate-900/80 text-slate-100 p-4 text-sm outline-none"></textarea>
+      </div>
+      <div class="flex items-center gap-3">
+        <button @click="save()" class="rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2">Save</button>
+        <a href="{{ url_for('reports_page') }}" class="rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 hover:bg-slate-200/50 dark:hover:bg-slate-800/60">View reports</a>
+      </div>
+      <div aria-live="polite">
+        <template x-if="status">
+          <div :class="status.type==='ok' ? 'text-emerald-600 dark:text-emerald-400' : 'text-rose-600 dark:text-rose-400'" class="text-xs">
+            <span x-text="status.text"></span>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <div>
+      <h2 class="text-xs font-medium text-slate-500 mb-2">Preview</h2>
+      <div class="rounded-xl border border-slate-700 bg-slate-900 text-slate-100 p-4 min-h-[200px] prose prose-invert max-w-none break-words" style="word-break: break-word;" x-html="preview"></div>
+    </div>
+  </div>
+</section>
+
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.7/dist/purify.min.js"></script>
+<script>
+function noteEditor(endpoint){
+  return {
+    raw: `$1`,
+    preview: '',
+    count: 0,
+    status: null,
+    init(){ this.update(); },
+    update(){ this.count = this.raw.length; this.preview = DOMPurify.sanitize(this.raw); },
+    wrap(open, close){ const ta=this.$refs.ta; const s=ta.selectionStart, e=ta.selectionEnd; const before=this.raw.slice(0,s), sel=this.raw.slice(s,e), after=this.raw.slice(e); this.raw = before+open+sel+close+after; this.$nextTick(()=>{ ta.focus(); ta.selectionStart=s+open.length; ta.selectionEnd=e+open.length; this.update(); }); },
+    insert(html){ const ta=this.$refs.ta; const s=ta.selectionStart; const before=this.raw.slice(0,s), after=this.raw.slice(s); this.raw = before+html+after; this.$nextTick(()=>{ ta.focus(); ta.selectionStart=ta.selectionEnd=s+html.length; this.update(); }); },
+    async save(){
+      this.status = null;
+      try {
+        const res = await fetch(endpoint, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ note: this.raw }) });
+        let json = {};
+        try { json = await res.json(); } catch(_) {}
+        if(!res.ok){
+          const msg = json.error || json.details || 'Error occur';
+          this.status = { type: 'error', text: 'Error occur: ' + msg };
+          window.dispatchEvent(new CustomEvent('toast', { detail: { title: 'Error occur', message: msg } }));
+          return;
+        }
+        this.status = { type: 'ok', text: 'Saved and Security staff reviewed note' };
+        window.dispatchEvent(new CustomEvent('toast', { detail: { title: 'Save', message: `Security staff reviewed. <a class=\'underline\' href=\'${json.note_url}\' target=\'_blank\'>Open note</a>` } }));
+      } catch(err){
+        this.status = { type: 'error', text: 'Error occur: ' + err.message };
+        window.dispatchEvent(new CustomEvent('toast', { detail: { title: 'Error occur', message: err.message } }));
+      }
+    }
+  }
+}
+</script>
+{% endblock %}

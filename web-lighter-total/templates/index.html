@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<section class="grid lg:grid-cols-2 gap-8 items-center">
+  <div class="space-y-6">
+    <div class="terminal">
+      <div class="terminal-head">
+        <span class="dot bg-red-400"></span>
+        <span class="dot bg-yellow-400"></span>
+        <span class="dot bg-green-400"></span>
+        <span class="ml-3 text-xs text-slate-300">root@BKISC-CTF:~</span>
+      </div>
+      <div class="p-5 bg-slate-900/80 text-slate-100">
+        <pre class="text-sm leading-6">$ id
+<span class="text-accent-300">uid=0(root) gid=0(root) groups=0(root)</span>
+$ ls
+<span class="text-accent-300">flag.txt</span>
+$ cat flag.txt
+<span class="text-accent-300">BKISC{G00d_G4m3}</span>
+</pre>
+      </div>
+    </div>
+    <p class="text-slate-600 dark:text-slate-300">This is a file scanning platform — a lighter alternative to VirusTotal. Please report to us if you suspect the result is a false positive. Our security staff will review it.</p>
+    <div class="flex flex-wrap gap-3">
+      <a href="{{ url_for('scan_page') }}" class="inline-flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 hover:bg-slate-200/50 dark:hover:bg-slate-800/60">scan</a>
+      <a href="{{ url_for('report_page') }}" class="inline-flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 hover:bg-slate-200/50 dark:hover:bg-slate-800/60">report</a>
+      <a href="{{ url_for('reports_page') }}" class="inline-flex items-center gap-2 rounded-lg border border-slate-300 dark:border-slate-700 px-4 py-2 hover:bg-slate-200/50 dark:hover:bg-slate-800/60">reports</a>
+    </div>
+  </div>
+  <div class="relative">
+    <div class="absolute -inset-6 -z-10 bg-gradient-to-tr from-accent-600/20 via-fuchsia-500/10 to-emerald-400/10 blur-2xl rounded-3xl"></div>
+    <div class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/70 backdrop-blur p-6">
+      <ul class="space-y-3 text-sm">
+        <li class="flex items-start gap-3"><span class="text-accent-500">›</span> Drag & drop file to upload</li>
+        <li class="flex items-start gap-3"><span class="text-accent-500">›</span> Report to help community</li>
+        <li class="flex items-start gap-3"><span class="text-accent-500">›</span> Points are awarded to users who submit reports</li>
+        <li class="flex items-start gap-3"><span class="text-accent-500">›</span> Friendly UI/UX</li>
+      </ul>
+    </div>
+  </div>
+</section>
+{% endblock %}

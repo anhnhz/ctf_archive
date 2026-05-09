@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="vi" class="scroll-smooth" x-data="theme()" x-init="init()" :class="{ 'dark': isDark }">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{% block title %}Storage Platform{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+  <script>
+    // Set initial dark mode class ASAP to avoid FOUC and ensure Tailwind dark: styles apply
+    (function(){
+      try {
+        var pref = localStorage.getItem('theme');
+        var wantsDark = pref ? (pref === 'dark') : window.matchMedia('(prefers-color-scheme: dark)').matches;
+        if (wantsDark) document.documentElement.classList.add('dark');
+      } catch (e) { /* ignore */ }
+    })();
+  </script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='tailwind.css') }}">
+  <script>
+    // Alpine helpers available before Alpine initializes
+    function theme(){
+      return {
+        isDark: false,
+        init(){
+          this.isDark = localStorage.getItem('theme') === 'dark' || window.matchMedia('(prefers-color-scheme: dark)').matches;
+          document.documentElement.classList.toggle('dark', this.isDark);
+        },
+        toggle(){
+          this.isDark = !this.isDark;
+          localStorage.setItem('theme', this.isDark ? 'dark' : 'light');
+          document.documentElement.classList.toggle('dark', this.isDark);
+        },
+        active(href){ return window.location.pathname === new URL(href, window.location.origin).pathname ? 'text-accent-600 dark:text-accent-300 bg-accent-50/50 dark:bg-accent-900/20' : 'text-slate-600 dark:text-slate-300'; }
+      }
+    }
+    function toaster(){
+      return {
+        toasts: [],
+        push(title, message){
+          const id = crypto.randomUUID?.() || String(Math.random());
+          this.toasts.push({id, title, message});
+          setTimeout(()=>{ this.toasts = this.toasts.filter(t=>t.id!==id) }, 4200);
+        }
+      }
+    }
+  </script>
+  
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <style>
+    /* coding vibe background */
+    body{ font-family: JetBrains Mono, ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .grid-bg::before{ content:''; position:fixed; inset:0; background-image: radial-gradient(circle at 1px 1px, rgba(100,116,139,.15) 1px, transparent 0); background-size: 24px 24px; pointer-events:none; opacity:.6 }
+    .terminal{ border:1px solid rgba(148,163,184,.3); border-radius:14px; overflow:hidden; box-shadow: var(--tw-shadow,0 0 #0000), 0 20px 40px -25px rgba(2,6,23,.4) }
+    .terminal-head{ display:flex; align-items:center; gap:.5rem; padding:.5rem .75rem; background:linear-gradient(180deg, rgba(2,6,23,.6), rgba(2,6,23,.3)); border-bottom:1px solid rgba(148,163,184,.2) }
+    .dot{ width:10px; height:10px; border-radius:999px }
+    .glass { background: rgba(15,23,42,.6); backdrop-filter: saturate(160%) blur(10px); }
+    .light-surface{ background: rgba(255,255,255,.6); backdrop-filter: blur(10px) }
+    [x-cloak]{ display:none !important }
+    .kbd{ padding:.1rem .4rem; border:1px solid rgba(148,163,184,.4); border-bottom-width:2px; border-radius:.5rem; font-size:.8em }
+  </style>
+</head>
+<body class="grid-bg min-h-screen bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100">
+  <!-- Header/Nav as a minimal terminal bar -->
+  <header class="sticky top-0 z-40">
+    <div class="light-surface dark:glass border-b border-slate-200/60 dark:border-slate-800/70">
+      <nav class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 flex h-14 items-center justify-between">
+        <a href="{{ url_for('index') }}" class="flex items-center gap-2 font-semibold">
+          
+          <span class="tracking-tight">LighterTotal</span>
+        </a>
+        <div class="hidden md:flex items-center gap-1 text-sm">
+          <a href="{{ url_for('scan_page') }}" class="px-3 py-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800/60" :class="active('{{ url_for('scan_page') }}')">scan</a>
+          <a href="{{ url_for('report_page') }}" class="px-3 py-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800/60" :class="active('{{ url_for('report_page') }}')">report</a>
+          <a href="{{ url_for('reports_page') }}" class="px-3 py-1.5 rounded-lg hover:bg-slate-200/60 dark:hover:bg-slate-800/60" :class="active('{{ url_for('reports_page') }}')">reports</a>
+        </div>
+        
+      </nav>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="mx-auto max-w-6xl p-4 sm:p-6 lg:p-8">
+    {% block content %}{% endblock %}
+  </main>
+
+  <footer class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-8 text-xs text-slate-500">
+    <div class="flex items-center justify-between">
+      <p>© {{ 2025 }} • BKISC-CTF</p>
+      <a class="hover:text-accent-500" href="{{ url_for('index') }}">~/index</a>
+    </div>
+  </footer>
+
+  <!-- Toasts (terminal style) -->
+  <div x-cloak x-data="toaster()" class="fixed inset-0 pointer-events-none">
+    <div class="absolute right-4 top-16 flex flex-col gap-2">
+      <template x-for="t in toasts" :key="t.id">
+        <div class="pointer-events-auto rounded-lg border border-slate-700/50 bg-slate-900/90 text-slate-100 shadow-glow px-4 py-3 min-w-[280px]">
+          <div class="font-semibold text-accent-300" x-text="t.title"></div>
+          <div class="text-xs mt-1" x-html="t.message"></div>
+        </div>
+      </template>
+    </div>
+  </div>
+
+  
+</body>
+</html>

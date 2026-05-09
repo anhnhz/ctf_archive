@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Your custom CSS here (Tailwind v4) */
+/* Add custom layers with @layer if needed, e.g.:
+@layer components {
+  .btn { @apply px-3 py-2 rounded-md bg-accent-600 text-white; }
+}
+*/
+
+@layer base { body { background-image: url('/static/bg.jpg'); background-size: cover; background-position: center; background-repeat: no-repeat; } }

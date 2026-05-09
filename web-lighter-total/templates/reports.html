@@ -1,0 +1,62 @@
+{% extends "layout.html" %}
+{% block title %}/reports{% endblock %}
+{% block content %}
+<section x-data="visit()" x-init="init()" class="space-y-6">
+  <header class="flex items-center gap-3">
+    <div class="flex-1">
+      <h1 class="text-xl font-semibold tracking-tight">reports</h1>
+      <p class="text-xs text-slate-500">Quick view in a modal or open in a new tab.</p>
+    </div>
+    <div class="relative">
+      <input x-model="q" @input="filter()" type="search" placeholder="Search…" class="rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900/60 px-3 py-2 w-56">
+      <span class="absolute right-3 top-2.5 text-slate-400 kbd">⌘K</span>
+    </div>
+  </header>
+
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for n in notes %}
+      <article class="rounded-2xl border border-slate-700 bg-slate-900 text-slate-100 p-4 flex flex-col" data-name="{{ n.name }}">
+        <div class="flex-1">
+          <h2 class="font-medium truncate" title="{{ n.name }}">{{ n.name }}</h2>
+          <p class="text-xs text-slate-400 mt-1"><time :datetime="formatEpoch({{ n.mtime | int }})" x-text="formatEpoch({{ n.mtime | int }})"></time></p>
+        </div>
+        <div class="mt-3 flex gap-2">
+          <button @click="open('{{ n.url }}')" class="flex-1 rounded-lg border border-slate-600 px-3 py-2 hover:bg-slate-800">Quick View</button>
+          <a href="{{ n.url }}" target="_blank" class="rounded-lg bg-accent-600 hover:bg-accent-700 text-white px-3 py-2">Open tab</a>
+        </div>
+      </article>
+    {% endfor %}
+  </div>
+
+  <!-- Modal preview -->
+  <div x-show="show" x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" @keydown.escape.window="show=false">
+    <div class="w-full max-w-3xl h-[80vh] rounded-2xl overflow-hidden bg-slate-900 text-slate-100 border border-slate-700 shadow-glow">
+      <div class="flex items-center justify-between p-3 border-b border-slate-700">
+        <h3 class="font-semibold">Preview</h3>
+        <button class="rounded-lg px-3 py-1.5 hover:bg-slate-800" @click="show=false">✕</button>
+      </div>
+      <iframe :src="src" class="w-full h-full bg-white"></iframe>
+    </div>
+  </div>
+</section>
+
+<script>
+function visit(){
+  return {
+    q: '',
+    show: false,
+    src: '',
+    init(){
+      window.addEventListener('keydown', (e)=>{ if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); const el=document.querySelector('input[type=search]'); if(el){ el.focus(); el.select(); } } });
+    },
+    filter(){
+      const cards = document.querySelectorAll('[data-name]');
+      const q = this.q.trim().toLowerCase();
+      cards.forEach(c=>{ c.classList.toggle('hidden', q && !c.dataset.name.toLowerCase().includes(q)); });
+    },
+    open(url){ this.src = url; this.show = true; },
+    formatEpoch(sec){ try{ const d = new Date(sec*1000); return d.toLocaleString(); } catch{ return sec; } }
+  }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+{% block title %}/scan{% endblock %}
+{% block content %}
+<section x-data="uploader('{{ url_for('scan_file') }}')" x-init="init()" class="space-y-6">
+  <header class="flex items-center gap-3">
+    <h1 class="text-xl font-semibold tracking-tight">scan</h1>
+    <span class="text-xs text-slate-500">Drag or choose file</span>
+  </header>
+
+  <div @dragover.prevent @drop.prevent="onDrop($event)" class="terminal">
+    <div class="terminal-head">
+      <span class="dot bg-red-400"></span>
+      <span class="dot bg-yellow-400"></span>
+      <span class="dot bg-green-400"></span>
+      <span class="ml-3 text-xs text-slate-300">POST {{ url_for('scan_file') }}</span>
+    </div>
+    <div class="p-8 bg-slate-900/80 text-slate-100 text-center">
+      <input type="file" class="hidden" x-ref="file" @change="onPick" />
+      <div class="space-y-3">
+        <div class="text-5xl">📤</div>
+        <div class="text-base">Drag & drop file at here</div>
+        <div class="text-xs text-slate-400">or</div>
+        <button type="button" @click="$refs.file.click()" class="rounded-lg bg-accent-600 hover:bg-accent-700 text-white px-4 py-2">Choose File</button>
+        <template x-if="fileName">
+          <div class="text-xs text-slate-300">Chosen: <span class="text-accent-300" x-text="fileName"></span> (<span x-text="fileSize"></span>)</div>
+        </template>
+      </div>
+    </div>
+  </div>
+
+  <template x-if="progress > 0">
+    <div>
+      <div class="flex justify-between text-xs mb-1">
+        <span>Uploading...</span><span x-text="progress + '%'"/>
+      </div>
+      <div class="h-2 rounded bg-slate-800 overflow-hidden">
+        <div class="h-2 bg-accent-600" :style="`width:${progress}%`"></div>
+      </div>
+    </div>
+  </template>
+
+  <div class="grid gap-4">
+    <template x-if="result">
+      <div class="rounded-xl border border-slate-700 bg-slate-900 text-slate-100 p-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-semibold">Response JSON</h2>
+          <button @click="copyResult()" class="text-xs px-2 py-1 border border-slate-600 rounded hover:bg-slate-800">Copy</button>
+        </div>
+        <pre class="text-xs overflow-x-auto mt-2"><code x-text="pretty(result)"></code></pre>
+      </div>
+    </template>
+  </div>
+</section>
+
+<script>
+function uploader(endpoint){
+  return {
+    progress: 0,
+    result: null,
+    fileName: '',
+    fileSize: '',
+    init(){},
+    async onPick(e){ const file = e.target.files[0]; if(!file) return; this.showFile(file); await this.upload(file); },
+    async onDrop(ev){ const file = ev.dataTransfer.files[0]; if(!file) return; this.showFile(file); await this.upload(file); },
+    showFile(file){ this.fileName = file.name; this.fileSize = (file.size/1024).toFixed(1) + ' KB'; },
+    async upload(file){
+      this.progress = 5; this.result = null;
+      const fd = new FormData(); fd.append('file', file);
+      try {
+        const res = await fetch(endpoint, { method: 'POST', body: fd });
+        for(let p=5;p<=90;p+=8){ this.progress = p; await new Promise(r=>setTimeout(r,25)); }
+        const json = await res.json();
+        this.progress = 100; this.result = json;
+        setTimeout(()=> this.progress = 0, 800);
+        window.dispatchEvent(new CustomEvent('toast', { detail: { title: res.ok?'Success':'Lỗi', message: res.ok? 'Uploaded and processing' : (json.error||'Some errors occur') } }));
+      } catch (err){
+        this.progress = 0; this.result = { error: err.message };
+        window.dispatchEvent(new CustomEvent('toast', { detail: { title: 'Error', message: err.message } }));
+      }
+    },
+    copyResult(){ navigator.clipboard?.writeText(this.pretty(this.result)); window.dispatchEvent(new CustomEvent('toast', { detail: { title: 'Copied', message: 'Response JSON is copied' } })); },
+    pretty(obj){ return JSON.stringify(obj, null, 2); }
+  }
+}
+window.addEventListener('toast', (e)=>{
+  const t = document.querySelector('[x-data^="toaster"]').__x.$data; t.push(e.detail.title, e.detail.message);
+});
+</script>
+{% endblock %}
